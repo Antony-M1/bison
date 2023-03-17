@@ -6,7 +6,6 @@ from django.contrib.auth.models import (
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-
 class User(AbstractBaseUser):
     user_id = models.UUIDField(default=uuid.uuid4, primary_key=True,
                                unique=True)
