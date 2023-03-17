@@ -36,8 +36,7 @@ class SignUpSerializer(serializers.Serializer):
         )
         user.set_password(validated_data['password'])
         user.save()
-        tokens = user.tokens()
-        return tokens
+        return user
 
 
 class LogInSerializer(serializers.Serializer):
