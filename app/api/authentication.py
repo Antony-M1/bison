@@ -27,7 +27,6 @@ class SignUpAPI(generics.CreateAPIView):
             serializer.is_valid(raise_exception=True)
             tokens = serializer.create(user_data)
             success_response['message'] = 'Sign Up Successfully'
-            success_response['data'] = {'token': tokens}
             return Response(success_response, status=201)
         except exceptions.NotAcceptable as ex:
             error_response['message'] = str(ex)
