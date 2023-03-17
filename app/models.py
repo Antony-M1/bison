@@ -5,52 +5,6 @@ from django.contrib.auth.models import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# Create your models here.
-
-
-class UserManager(BaseUserManager):
-
-    def create_user(self, **kwargs):
-        '''
-        This function override from the BaseUserManager
-        https://docs.djangoproject.com/en/4.0/ref/contrib/auth/#manager-methods
-        Same as create_superuser(),
-        but sets is_staff and is_superuser to False.
-        '''
-        user = kwargs
-        if user['username'] is None:
-            raise TypeError('username must not be None')
-        if user['email'] is None:
-            raise TypeError('email must not be None')
-
-        user_ = self.model(
-            username=user['username'],
-            email=self.normalize_email(user['email']),
-            phone_number=user.get('country_code', '') + user.
-            get('phone_number', ''),
-            referal_code=user.get('referal_code')
-        )
-        user_.set_password(user['password'])
-        user_.save(self._db)
-        return user_
-
-    def create_superuser(self, username, email, password=None):
-        '''
-        This function override from the BaseUserManager
-        https://docs.djangoproject.com/en/4.0/ref/contrib/auth/#manager-methods
-        Same as create_user(), but sets is_staff and is_superuser to True.
-        '''
-        if password is None:
-            raise TypeError('password must not be None')
-
-        user = self.create_user(username=username,
-                                email=email,
-                                password=password)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save(using=self._db)
-        return user
-
 
 class User(AbstractBaseUser):
     user_id = models.UUIDField(default=uuid.uuid4, primary_key=True,
