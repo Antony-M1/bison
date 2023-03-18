@@ -7,6 +7,9 @@ from django.http.response import HttpResponse
 from django.db.utils import (
     IntegrityError
 )
+from app.models import (
+    User
+)
 from .serializers import (
     authentication
 )
@@ -25,7 +28,8 @@ class SignUpAPI(generics.CreateAPIView):
         success_response, error_response = get_200_and_400_response_template()
         try:
             serializer.is_valid(raise_exception=True)
-            tokens = serializer.create(user_data)
+            serializer.create(user_data)
+            success_response['status_code'] = 201
             success_response['message'] = 'Sign Up Successfully'
             return Response(success_response, status=201)
         except exceptions.NotAcceptable as ex:
@@ -39,6 +43,9 @@ class SignUpAPI(generics.CreateAPIView):
             return Response(error_response, status=400)
         except Exception as ex:
             return Response({'error': str(ex)}, status=500)
+
+    def get_queryset(self):
+        return User.objects.all()
 
 
 class LogInAPI(generics.CreateAPIView):

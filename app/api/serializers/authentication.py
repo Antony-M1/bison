@@ -9,8 +9,10 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(min_length=8, max_length=128)
     confirm_password = serializers.CharField(min_length=8, max_length=128)
-    first_name = serializers.CharField(min_length=3, max_length=250)
-    last_name = serializers.CharField(min_length=3, max_length=250)
+    first_name = serializers.CharField(min_length=3, max_length=250,
+                                       required=False)
+    last_name = serializers.CharField(min_length=3, max_length=250,
+                                      required=False)
 
     class Meta:
         model = models.User
@@ -24,7 +26,8 @@ class SignUpSerializer(serializers.Serializer):
             (attrs.get('password') != attrs.get('confirm_password')) or
             (attrs.get('password') is None) or ((attrs.get('email') is None))
         ):
-            raise exceptions.NotAcceptable("Password and Confirm Password mismatching")
+            raise exceptions.NotAcceptable("Password and Confirm Password \
+                                           mismatching")
         return True
 
     def create(self, validated_data):
