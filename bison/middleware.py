@@ -45,6 +45,7 @@ class CustomMiddleware(object):
         return response
 
     def process_exception(self, request, exception):
+        print(exception)
         try:
             self.response_500['message'] = exception.msg
         except Exception as e:
