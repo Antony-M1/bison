@@ -1,1 +1,7 @@
 # bison
+
+# .env
+```
+EMAIL_HOST_USER=<YOUR_GMAIL_ID>
+EMAIL_HOST_PASSWORD=<APP_PASSWORD>
+```
