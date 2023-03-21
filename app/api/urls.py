@@ -1,12 +1,11 @@
 from django.urls import path
 from .authentication import (
-    LogInAPI, SignUpAPI,
-    test
+    LogInAPI, SignUpAPI, VerifyOTPAPI
 )
 
 
 urlpatterns = [
     path('sign-up', SignUpAPI.as_view(), name='sign-up'),
     path('login', LogInAPI.as_view(), name='login'),
-    path('test', test, name='test'),
+    path('verify-otp', VerifyOTPAPI.as_view(), name='verify-otp'),
 ]

@@ -17,3 +17,16 @@ UNAUTHORIZED_RESPONSE = {
     "status_code": 401,
     "status": "error"
 }
+
+OTP_EMAIL_RESPONSE = {
+    "subject": "Bison OTP",
+    "message": "This is a one-time password don't share otheres\n"
+}
+
+REMOVE_FIELDS_FROM_USER_MODEL = [
+    "password",
+    "otp",
+    "otp_time",
+    "backend",
+    "_state"
+]

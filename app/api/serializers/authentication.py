@@ -43,4 +43,12 @@ class SignUpSerializer(serializers.Serializer):
 
 
 class LogInSerializer(serializers.Serializer):
-    pass
+    username = serializers.CharField(min_length=4, max_length=100,
+                                     required=False)
+    email = serializers.EmailField(required=False)
+    password = serializers.CharField(min_length=8, max_length=100)
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
+    otp = serializers.CharField(min_length=6, max_length=6)
