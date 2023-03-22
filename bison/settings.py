@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     # custom middleware
-    'bison.middleware.CustomMiddleware'
+    # 'bison.middleware.CustomMiddleware'
 ]
 
 ROOT_URLCONF = 'bison.urls'

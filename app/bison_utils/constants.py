@@ -30,3 +30,5 @@ REMOVE_FIELDS_FROM_USER_MODEL = [
     "backend",
     "_state"
 ]
+
+OTP_EXPIRE_TIME = 5

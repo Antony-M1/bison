@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from app.bison_utils.util import generate_otp
+from django.utils.translation import gettext_lazy as _
 
 
 class CustomUserManager(BaseUserManager):
@@ -21,9 +22,13 @@ class User(AbstractUser):
                                unique=True)
     otp = models.CharField(max_length=6, null=True, blank=True,
                            default=generate_otp)
-    otp_time = models.DateTimeField(auto_now=True)
+    otp_time = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
+    first_name = models.CharField(_('first name'), max_length=150, blank=True,
+                                  null=True)
+    last_name = models.CharField(_('last name'), max_length=150, blank=True,
+                                 null=True)
 
     objects = CustomUserManager()
 

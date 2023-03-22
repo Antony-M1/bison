@@ -48,7 +48,41 @@ class LogInSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     password = serializers.CharField(min_length=8, max_length=100)
 
+    def validate(self, attrs):
+        email = attrs.get('email')
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username is None and email is None:
+            raise exceptions.NotAcceptable("Username or Email is required")
+        if password is None:
+            raise exceptions.NotAcceptable("Password is required")
+
+        return attrs
+
 
 class VerifyOTPSerializer(serializers.Serializer):
     user_id = serializers.UUIDField()
     otp = serializers.CharField(min_length=6, max_length=6)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
+    old_password = serializers.CharField(min_length=8, max_length=128)
+    new_password = serializers.CharField(min_length=8, max_length=128)
+    confirm_password = serializers.CharField(min_length=8, max_length=128)
+
+    def validate(self, attrs):
+        old_password = attrs.get('old_password')
+        new_password = attrs.get('new_password')
+        confirm_password = attrs.get('confirm_password')
+
+        if new_password != confirm_password:
+            raise exceptions.NotAcceptable("Password and Confirm Password \
+                                           mismatching")
+        if old_password is None:
+            raise exceptions.NotAcceptable("Old Password is required")
+        if new_password is None:
+            raise exceptions.NotAcceptable("New Password is required")
+
+        return attrs
