@@ -206,6 +206,86 @@ class TestLoginAPI:
 
 
 @pytest.mark.django_db
+class TestChangePasswordAPI:
+    url = reverse('change-password')
+
+    def test_change_password_api(self, user_data):
+        data = {
+            "user_id": str(user_data.data.get('data').get('user_id')),
+            "old_password": 'testpassword',
+            "new_password": 'testpassword1',
+            "confirm_password": 'testpassword1'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_200_OK
+
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_invalid_old_password(self, user_data):
+        data = {
+            "user_id": str(user_data.data.get('data').get('user_id')),
+            "old_password": 'testpassword-invalid',
+            "new_password": 'testpassword1',
+            "confirm_password": 'testpassword1'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_new_password_and_confirm_password_mismatch(
+            self, user_data):
+        data = {
+            "user_id": str(user_data.data.get('data').get('user_id')),
+            "old_password": 'testpassword',
+            "new_password": 'testpassword1',
+            "confirm_password": 'testpassword2'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_without_user_id(self, user_data):
+        data = {
+            "old_password": 'testpassword',
+            "new_password": 'testpassword1',
+            "confirm_password": 'testpassword2'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_without_old_password(self, user_data):
+        data = {
+            "user_id": str(user_data.data.get('data').get('user_id')),
+            "new_password": 'testpassword1',
+            "confirm_password": 'testpassword2'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_without_new_password(self, user_data):
+        data = {
+            "user_id": str(user_data.data.get('data').get('user_id')),
+            "old_password": 'testpassword',
+            "confirm_password": 'testpassword2'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_without_confirm_password(self, user_data):
+        data = {
+            "user_id": str(user_data.data.get('data').get('user_id')),
+            "old_password": 'testpassword',
+            "new_password": 'testpassword1'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_change_password_api_empty_json_body(self, user_data):
+        data = {}
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
 def test_login1(login_response):
     c = 1
     assert login_response.status_code == status.HTTP_200_OK
