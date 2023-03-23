@@ -18,16 +18,18 @@ from app.models import (
 )
 from .serializers.authentication import (
     SignUpSerializer, VerifyOTPSerializer, LogInSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer, ForgotPasswordSerializer,
+    ForgotPasswordOTPSerializer
 )
 from ..bison_utils.util import (
-    get_200_and_400_response_template, send_mail
+    get_200_and_400_response_template, send_mail, generate_otp
 )
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import check_password
 from app.bison_utils.constants import (
-    OTP_EMAIL_RESPONSE, REMOVE_FIELDS_FROM_USER_MODEL, OTP_EXPIRE_TIME
+    OTP_EMAIL_RESPONSE, REMOVE_FIELDS_FROM_USER_MODEL, OTP_EXPIRE_TIME,
+    EMAIL_RESPONSE
 )
 
 
@@ -185,4 +187,69 @@ class ChangePasswordAPI(GenericAPIView):
             return Response(error_response, status=HTTP_400_BAD_REQUEST)
         except User.DoesNotExist as ex:
             error_response['message'] = str(ex)
+            return Response(error_response, status=HTTP_400_BAD_REQUEST)
+
+
+class ForgotPasswordOTPAPI(GenericAPIView):
+    serializer_class = ForgotPasswordOTPSerializer
+
+    @swagger_auto_schema(tags=['auth'])
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        success_response, error_response = get_200_and_400_response_template()
+        try:
+            user = User.objects.get(user_id=user_id)
+            otp = generate_otp()
+            user.otp = otp
+            user.otp_time = timezone.now()
+            user.save()
+            forgot_password_otp_response = EMAIL_RESPONSE.get(
+                                                'forgot_password_otp'
+                                            )
+            send_mail(
+                subject=forgot_password_otp_response.get('subject'),
+                message=forgot_password_otp_response.get('message') + otp,
+                recipient_list=['antonypraveenkumarsoftsuave@gmail.com'],
+            )
+            success_response['message'] = 'OTP Sent Successfully'
+            return Response(success_response, status=HTTP_200_OK)
+        except User.DoesNotExist:
+            error_response['message'] = 'User Not Exist'
+            return Response(error_response, status=HTTP_400_BAD_REQUEST)
+
+
+class ForgotPasswordAPI(GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+
+    @swagger_auto_schema(tags=['auth'])
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_id = request.data.get('user_id')
+        new_password = request.data.get('new_password')
+        otp = request.data.get('otp')
+        success_response, error_response = get_200_and_400_response_template()
+        try:
+            user = User.objects.get(user_id=user_id)
+            if user.otp == otp:
+                td = timezone.now() - user.otp_time
+                if int(td.total_seconds() / 60) <= OTP_EXPIRE_TIME:
+                    user.set_password(new_password)
+                    user.save()
+                    success_response['message'] = (
+                            'Password Changed Successfully'
+                        )
+                    return Response(success_response, status=HTTP_200_OK)
+                else:
+                    error_response['message'] = 'OTP Expired'
+                    return Response(error_response,
+                                    status=HTTP_400_BAD_REQUEST)
+            else:
+                error_response['message'] = 'Invalid OTP'
+                return Response(error_response, status=HTTP_400_BAD_REQUEST)
+        except NotAcceptable as ex:
+            error_response['message'] = str(ex)
+            return Response(error_response, status=HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            error_response['message'] = 'User Not Exsist'
             return Response(error_response, status=HTTP_400_BAD_REQUEST)

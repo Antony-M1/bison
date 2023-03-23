@@ -7,6 +7,7 @@ import pytest
 from rest_framework.test import APIClient
 from app.models import User
 from app.bison_utils.constants import OTP_EXPIRE_TIME
+from app.bison_utils.util import generate_otp
 
 
 client = APIClient()
@@ -286,6 +287,149 @@ class TestChangePasswordAPI:
 
 
 @pytest.mark.django_db
-def test_login1(login_response):
-    c = 1
-    assert login_response.status_code == status.HTTP_200_OK
+class TestForgotPasswordOTPAPI:
+    url = reverse('forgot-password-otp')
+
+    def test_forgot_password_otp_api(self, user_data):
+        data = {
+            'user_id': user_data.data.get('data').get('user_id')
+        }
+        response = client.post(self.url, data)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_forgot_password_otp_api_invalid_user_id(self, user_data):
+        user_id = None
+
+        def generate_user_id():
+            user_id = str(uuid.uuid4())
+            if User.objects.filter(user_id=user_id).exists():
+                generate_user_id()
+            return user_id
+        if user_id is None:
+            user_id = generate_user_id()
+
+        data = {
+            'user_id': user_id
+        }
+        response = client.post(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_otp_api_empty_json_body(self):
+        data = {}
+        response = client.post(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+class TestForgotPasswordAPI:
+    url = reverse('forgot-password')
+
+    def test_forgot_password_api(self, user_data):
+        user_id = user_data.data.get('data').get('user_id')
+        user = User.objects.get(user_id=user_id)
+        data = {
+            'user_id': user_id,
+            'new_password': 'testpassword1',
+            'confirm_password': 'testpassword1',
+            'otp': user.otp
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_forgot_password_api_invalid_user_id(self, user_data):
+        user_id = None
+
+        def generate_user_id():
+            user_id = str(uuid.uuid4())
+            if User.objects.filter(user_id=user_id).exists():
+                generate_user_id()
+            return user_id
+        if user_id is None:
+            user_id = generate_user_id()
+
+        data = {
+            'user_id': user_id,
+            'new_password': 'testpassword1',
+            'confirm_password': 'testpassword1',
+            'otp': '000000'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_empty_json_body(self, user_data):
+        data = {}
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_invalid_otp(self, user_data):
+        user_id = user_data.data.get('data').get('user_id')
+        user = User.objects.get(user_id=user_id)
+
+        def generate_otp_test():
+            otp = generate_otp()
+            if user.otp == otp:
+                generate_otp_test()
+            else:
+                return otp
+        otp = generate_otp_test()
+        data = {
+            'user_id': user_id,
+            'new_password': 'testpassword1',
+            'confirm_password': 'testpassword1',
+            'otp': otp,
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_invalid_new_password(self, user_data):
+        user_id = user_data.data.get('data').get('user_id')
+        user = User.objects.get(user_id=user_id)
+        data = {
+            'user_id': user_id,
+            'new_password': 'testpassword1',
+            'confirm_password': 'testpassword2',
+            'otp': user.otp,
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_without_user_id(self, user_data):
+        data = {
+            'new_password': 'testpassword1',
+            'confirm_password': 'testpassword1',
+            'otp': '000000'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_without_new_password(self, user_data):
+        data = {
+            'user_id': user_data.data.get('data').get('user_id'),
+            'confirm_password': 'testpassword1',
+            'otp': '000000'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_without_confirm_password(self, user_data):
+        data = {
+            'user_id': user_data.data.get('data').get('user_id'),
+            'new_password': 'testpassword1',
+            'otp': '000000'
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_without_otp(self, user_data):
+        data = {
+            'user_id': user_data.data.get('data').get('user_id'),
+            'new_password': 'testpassword1',
+            'confirm_password': 'testpassword1',
+        }
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_forgot_password_api_empty_json_body(self, user_data):
+        data = {}
+        response = client.patch(self.url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST

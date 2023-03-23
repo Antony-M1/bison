@@ -23,6 +23,17 @@ OTP_EMAIL_RESPONSE = {
     "message": "This is a one-time password don't share otheres\n"
 }
 
+EMAIL_RESPONSE = {
+    'otp_email_response': {
+        "subject": "Bison OTP",
+        "message": "This is a one-time password don't share otheres\n"
+    },
+    'forgot_password_otp': {
+        "subject": "Bison Forgot Password",
+        "message": "This is a one-time password don't share otheres\n"
+    }
+}
+
 REMOVE_FIELDS_FROM_USER_MODEL = [
     "password",
     "otp",
