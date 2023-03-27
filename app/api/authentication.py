@@ -223,13 +223,13 @@ class ForgotPasswordAPI(GenericAPIView):
 
     @swagger_auto_schema(tags=['auth'])
     def patch(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_id = request.data.get('user_id')
-        new_password = request.data.get('new_password')
-        otp = request.data.get('otp')
         success_response, error_response = get_200_and_400_response_template()
+        serializer = self.serializer_class(data=request.data)
         try:
+            serializer.is_valid(raise_exception=True)
+            user_id = request.data.get('user_id')
+            new_password = request.data.get('new_password')
+            otp = request.data.get('otp')
             user = User.objects.get(user_id=user_id)
             if user.otp == otp:
                 td = timezone.now() - user.otp_time
@@ -250,6 +250,6 @@ class ForgotPasswordAPI(GenericAPIView):
         except NotAcceptable as ex:
             error_response['message'] = str(ex)
             return Response(error_response, status=HTTP_400_BAD_REQUEST)
-        except User.DoesNotExist:
-            error_response['message'] = 'User Not Exsist'
+        except User.DoesNotExist as ex:
+            error_response['message'] = str(ex)
             return Response(error_response, status=HTTP_400_BAD_REQUEST)
