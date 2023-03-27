@@ -98,14 +98,11 @@ class ForgotPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         new_password = attrs.get('new_password')
         confirm_password = attrs.get('confirm_password')
-        otp = attrs.get('otp')
 
         if new_password != confirm_password:
             raise exceptions.NotAcceptable(
                 "Password and Confirm Password mismatching"
                 )
-        if otp is None:
-            raise exceptions.NotAcceptable("OTP is required")
 
         return attrs
 
